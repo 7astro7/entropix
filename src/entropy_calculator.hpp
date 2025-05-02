@@ -8,14 +8,15 @@
 
 class EntropyCalculator {
 public:
-    // Constructor: pass in raw byte data
-    EntropyCalculator(const std::vector<uint8_t>& data);
+
+    EntropyCalculator(const std::vector<unsigned char>& data);
 
     // Calculate Shannon entropy in bits per byte (0.0 - 8.0)
-    double calculate_entropy() const;
+    void calculate_entropy();
 
-    // Estimate compressibility based on entropy
-    std::string estimate_compressibility() const;
+    double get_entropy() const;
+
+    double estimate_compression_ratio() const;    
 
     // Return byte frequency histogram (index = byte value 0-255)
     const std::array<size_t, 256>& get_histogram() const;
@@ -26,7 +27,8 @@ public:
 private:
     std::array<size_t, 256> byte_freq_;  // Byte frequencies
     size_t total_bytes_;                 // Total number of bytes
-
+    std::vector<unsigned char> data_; 
+    mutable double entropy_ = -1.0;
     std::size_t compute_total_bytes() const;
 };
 

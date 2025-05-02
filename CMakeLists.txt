@@ -24,6 +24,12 @@ add_executable(runTests
     test/test_entropy_calculator.cpp   
 )
 
+add_executable(entropix_cli main.cpp)
+
+target_link_libraries(entropix_cli
+    entropix
+)
+
 target_link_libraries(runTests
     gtest_main
     entropix
