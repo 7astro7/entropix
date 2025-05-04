@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
 project(entropix)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_CXX_FLAGS_DEBUG "-g3 -ggdb3 -O0")
 
 include_directories(src)  
 
@@ -17,11 +18,13 @@ enable_testing()
 add_library(entropix
     src/file_reader.cpp
     src/entropy_calculator.cpp
+    src/block_entropy_scanner.cpp  
 )
 
 add_executable(runTests
     test/test_file_reader.cpp
     test/test_entropy_calculator.cpp   
+    test/test_block_entropy_scanner.cpp
 )
 
 add_executable(entropix_cli main.cpp)

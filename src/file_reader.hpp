@@ -9,7 +9,6 @@ class FileReader {
 public:
     explicit FileReader(const std::string& filepath);
 
-    // Reads the entire file into memory
     bool read_file();
 
     const std::vector<uint8_t>& get_data() const;

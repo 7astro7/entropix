@@ -4,6 +4,10 @@
 
 EntropyCalculator::EntropyCalculator(const std::vector<unsigned char>& data)
     : data_(data), total_bytes_(data.size()) {
+    
+    if (data.empty()) {
+        throw std::invalid_argument("Data cannot be empty.");
+    }        
 
     byte_freq_.fill(0);  // zero initialize just in case
 
@@ -13,10 +17,8 @@ EntropyCalculator::EntropyCalculator(const std::vector<unsigned char>& data)
 }
 
 void EntropyCalculator::calculate_entropy() {
-    if (data_.empty()) 
-        entropy_ = 0.0;  // No data, no entropy
     double entropy = 0.0;
-    for (const auto& freq : byte_freq_) {
+    for (const size_t& freq : byte_freq_) {
         if (freq > 0) {
             double probability = static_cast<double>(freq) / total_bytes_;
             entropy -= probability * log2(probability);

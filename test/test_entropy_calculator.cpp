@@ -52,8 +52,8 @@ TEST(EntropyCalculatorTest, EstimateCompressionRatio) {
 }
 TEST(EntropyCalculatorTest, EmptyData) {
     std::vector<unsigned char> data;
-    EntropyCalculator calculator(data);
-    EXPECT_EQ(calculator.get_entropy(), 0.0);  
+    // should throw on empty input
+    EXPECT_THROW(EntropyCalculator calculator(data), std::invalid_argument);
 }
 
 TEST(EntropyCalculatorTest, EntropyOfFiveUniqueBytes) {
