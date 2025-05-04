@@ -26,7 +26,6 @@ TEST(EntropyCalculatorTest, GetTotalBytes) {
         'A', 'B', 'C', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
         'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'
     };  
-
     EntropyCalculator calculator(data);
     EXPECT_EQ(calculator.get_total_bytes(), 20);
 }
@@ -34,7 +33,7 @@ TEST(EntropyCalculatorTest, GetTotalBytes) {
 TEST(EntropyCalculatorTest, GetHistogramCountsCorrectly) {
     std::vector<unsigned char> data = {'A', 'B', 'A', 'C'};  // ASCII 65, 66, 65, 67
     EntropyCalculator calc(data);
-    const auto& hist = calc.get_histogram();
+    const std::array<size_t, 256>& hist = calc.get_histogram();
 
     EXPECT_EQ(hist[65], 2);  // 'A'
     EXPECT_EQ(hist[66], 1);  // 'B'
@@ -62,13 +61,27 @@ TEST(EntropyCalculatorTest, EntropyOfFiveUniqueBytes) {
     EXPECT_NEAR(calc.get_entropy(), std::log2(5.0), 0.01);
 }
 
-//     Mostly repeated data + one oddball (e.g. 99 'A's and 1 'Z')
-
 TEST(EntropyCalculatorTest, MostlyRepeatedData) {
+    // Test that a mostly uniform input with one differing 
+    // byte produces low entropy.
     std::vector<unsigned char> data(100, 'A');  
     data[99] = 'Z';  // One oddball
     EntropyCalculator calculator(data);
     double entropy = calculator.get_entropy();
-    EXPECT_NEAR(entropy, 0.0803, 0.001);
+    EXPECT_NEAR(entropy, 0.08079, 0.00001);
 }
 
+TEST(EntropyCalculatorTest, TrailingWhitespaceEntropyChangeIsExpected) {
+    // Test that adding a newline at the end of a string changes the entropy
+    std::vector<unsigned char> clean_data = {'A', 'A', 'A', 'B'};
+    std::vector<unsigned char> padded_data = {'A', 'A', 'A', 'B', '\n'};
+
+    EntropyCalculator clean_calc(clean_data);
+    EntropyCalculator padded_calc(padded_data);
+
+    double clean_entropy = clean_calc.get_entropy();
+    double padded_entropy = padded_calc.get_entropy();
+
+    EXPECT_GT(padded_entropy, clean_entropy);  // Entropy should go up
+    EXPECT_NEAR(padded_entropy, 1.37095, 0.0001); 
+}
