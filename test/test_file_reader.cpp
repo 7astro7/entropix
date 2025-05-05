@@ -4,7 +4,7 @@
 
 
 TEST(FileReaderTest, ReadSmallFileSuccessfully) {
-    std::string filepath = std::string(SOURCE_DIR) + "/test_data/small.txt";
+    std::string filepath = std::string(SOURCE_DIR) + "/test/data/small.txt";
     FileReader reader(filepath);
     bool read_success = reader.read_file();
 
