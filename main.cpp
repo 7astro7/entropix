@@ -5,10 +5,14 @@
 #include <string>
 #include <iomanip>
 #include <sstream>
+#include <fstream>
 #include <filesystem>
 #include <utils.hpp>
+#include <nlohmann/json.hpp>
+#include <chrono> 
 
 namespace fs = std::filesystem;
+using json = nlohmann::json;
 
 int main(int argc, char* argv[]) {
     if (argc < 2 || std::string(argv[1]) == "--help") {
@@ -21,6 +25,7 @@ int main(int argc, char* argv[]) {
           << "[--entropy-threshold <value>] "
           << "[--verbose -v] "
           << "[--recursive -r] "
+          << "[--output <file>] "
           << "[--block-scan <size>]\n";
         return 0;
     }
@@ -30,17 +35,20 @@ int main(int argc, char* argv[]) {
     int block_size = 0;
     bool verbose = false;
     bool recursive = false;
+    std::string out_path = utils::make_report_filename();
 
     for (int i = 2; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--entropy-threshold" && i + 1 < argc) {
             entropy_threshold = std::stod(argv[++i]);
-        } else if (arg == "--block-scan" && i + 1 < argc) {
+        } else if (arg == "--block-scan" || arg == "-b" && i + 1 < argc) {
             block_size = std::stoi(argv[++i]);
         } else if (arg == "--verbose" || arg == "-v") {
             verbose = true; 
         } else if (arg == "--recursive" || arg == "-r") {
             recursive = true; 
+        } else if (arg == "--output" || arg == "-o" && i + 1 < argc) {
+            out_path = argv[++i];
         } else {
             std::cerr << "Unknown option: " << arg << "\n";
             return 1;
@@ -50,6 +58,16 @@ int main(int argc, char* argv[]) {
     if (entropy_threshold < 0.0 || entropy_threshold > 8.0) {
         std::cerr << "Error: Entropy threshold must be in range [0.0, 8.0].\n";
         exit(1);
+    }
+    if (block_size < 0) {
+        std::cerr << "Error: --block-scan must be >= 0.\n";
+        return 1;
+    }
+    
+    std::ofstream report(out_path);
+    if (!report) {
+        std::cerr << "Error: cannot open " << out_path << "\n";
+        return 1;
     }
 
     // gather needed files, recursive or not
@@ -64,8 +82,10 @@ int main(int argc, char* argv[]) {
         std::cerr << "Error: " << e.what() << "\n";
         exit(1);
     }
-    
-    size_t count_high_entropy = 0;
+
+    // collect files (honoring --recursive)
+    files = utils::collect_files(input_path, recursive);    
+    json jresults = json::array();
     // for each file, either block scan or global scan 
     for (const fs::path& path : files) {
         FileReader reader(path.string());
@@ -75,6 +95,10 @@ int main(int argc, char* argv[]) {
         }
     
         const std::vector<uint8_t>& data = reader.get_data();
+
+        json entry; 
+        entry["path"] = path.string();
+        entry["threshold"] = entropy_threshold;
         
         // block scan mode 
         if (block_size > 0) {
@@ -83,42 +107,31 @@ int main(int argc, char* argv[]) {
                 block_size, 
                 entropy_threshold
             );
-            for (const std::pair<size_t, double>& pair : results) {
-                std::cout
-                << path 
-                << "  Offset 0x"
-                << std::hex << std::setw(8) << std::setfill('0') << pair.first
-                << std::dec    // back to decimal
-                << ": "
-                << std::fixed << std::setprecision(4) << pair.second
-                << " bits/byte\n";    
+            if (results.empty()) continue;
+            
+            json blocks = json::array();
+            for (const auto& [offset, entropy] : results) {
+                json block;
+                block["offset"] = offset;
+                block["entropy"] = entropy;
+                blocks.push_back(block);
             }
-            continue; // Skip global entropy
+            entry["type"] = "block";
+            entry["blocks"] = std::move(blocks);
+            EntropyCalculator calc(data);
+            entry["file_entropy"] = calc.get_entropy();        
         }
-        
-        // global scan mode
-        EntropyCalculator calculator(data);
-        double entropy = calculator.get_entropy();
-
-        if (entropy_threshold > 0.0 && entropy >= entropy_threshold) {
-            std::cout << path << " [!] High entropy detected: " << entropy 
-                << " bits/byte — possible encryption or packing\n";
-            count_high_entropy++;
-        } else if (verbose) {
-            std::cout << path << "Entropy: " << entropy << " bits/byte";
-            if (entropy_threshold > 0.0) {
-                std::cout << " (below threshold " << entropy_threshold << ")";
-            }
-            std::cout << "\n";
+        else {
+            // global scan mode
+            double entropy = EntropyCalculator(data).get_entropy();
+            if (entropy < entropy_threshold) continue;
+            entry["type"] = "global";
+            entry["entropy"] = entropy;
         }
+        jresults.push_back(entry);
     }
-
-    if (count_high_entropy > 0) {
-        std::cout << "Found " << count_high_entropy 
-            << " files with entropy above threshold.\n";
-    } else if (verbose) {
-        std::cout << "No files found with entropy above threshold.\n";
-    }
+    utils::write_json_output(report, jresults);
+    std::cout << "Report written to " << out_path << "\n";
 
     return 0;
 }

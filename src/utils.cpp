@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <system_error>
 #include <vector>
+#include <nlohmann/json.hpp>
 
 namespace fs = std::filesystem;
 namespace utils {
@@ -47,6 +48,19 @@ std::vector<fs::path> collect_files(const fs::path& root, bool recursive) {
     }
 
     return out;
+}
+
+std::string make_report_filename(const std::string& prefix) {
+    auto now   = std::chrono::system_clock::now();
+    auto t_c   = std::chrono::system_clock::to_time_t(now);
+    std::ostringstream ts;
+    ts << std::put_time(std::localtime(&t_c), "%Y%m%d-%H%M%S");
+    return prefix + "-" + ts.str() + ".json";
+}
+
+// method to make testable output
+void write_json_output(std::ostream& out, const nlohmann::json& data) {
+    out << data.dump(2) << "\n";
 }
 
 } // namespace utils
