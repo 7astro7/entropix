@@ -5,7 +5,7 @@
 
 namespace fs = std::filesystem;
 namespace utils {
-    std::vector<fs::path> collect_files(const fs::path& root, bool recursive); 
+    std::vector<fs::path> collect_files(const fs::path& root, bool recursive, const std::string& extension = ""); 
     
     std::string make_report_filename(const std::string& prefix = "entropix-report");
     
