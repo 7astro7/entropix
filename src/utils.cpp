@@ -6,14 +6,7 @@
 
 namespace fs = std::filesystem;
 namespace utils {
-/**
- * collect_files
- *
- * @param root      the file or directory to scan
- * @param recursive if true, descend into subdirs
- * @throws std::invalid_argument if `root` doesn’t exist or isn’t a file/dir
- * @returns a flat vector of all regular files found
- */
+
 std::vector<fs::path> collect_files(const fs::path& root, bool recursive, const std::string& extension) {
     std::vector<fs::path> out;
     std::error_code ec;

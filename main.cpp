@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
             recursive = true; 
         } else if (arg == "--output" || arg == "-o") {
             if (i + 1 < argc) { 
-            out_path = argv[++i];
+                out_path = argv[++i];
             }
             else { 
                 std::cerr << "Error: --output requires a value.\n"; 
