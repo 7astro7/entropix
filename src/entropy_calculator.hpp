@@ -51,7 +51,7 @@ public:
      * @return The entropy value in bits per byte. Returns -1.0 if entropy
      *         has not been calculated yet.
      */
-    double get_entropy() const;
+    double get_entropy();
 
     /**
      * @brief Estimates the fraction of the input data that could be compressed.
@@ -65,7 +65,7 @@ public:
      * @return A value between 0.0 and 1.0 representing the estimated fraction
      *         of compressible data. Returns 0.0 if entropy is 8.0 (maximum entropy).
      */
-    double estimate_compression_ratio() const;    
+    double estimate_compression_ratio();    
 
     /**
      * @brief Returns the byte frequency histogram of the input data.

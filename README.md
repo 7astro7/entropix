@@ -21,7 +21,7 @@ Entropix is an entropy analysis tool that identifies encrypted, packed, or anoma
 ### Detect Encrypted or Packed Files
 Flag files with entropy above a threshold (default: 7.9):
 ```bash
-./entropix_cli suspicious_payload.bin --entropy-threshold 7.9
+./entropix_cli suspicious_payload.bin --entropy-threshold 7.9 --output results.json
 ```
 
 ### Block-wise Scanning

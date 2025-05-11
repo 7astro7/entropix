@@ -31,14 +31,14 @@ size_t EntropyCalculator::get_total_bytes() const {
     return total_bytes_;
 }
 
-double EntropyCalculator::estimate_compression_ratio() const {
+double EntropyCalculator::estimate_compression_ratio() {
     double entropy = get_entropy();
     return 1.0 - (entropy / 8.0);  // naive lower bound estimate
 }
 
-double EntropyCalculator::get_entropy() const {
+double EntropyCalculator::get_entropy() {
     if (entropy_ < 0.0) {
-        const_cast<EntropyCalculator*>(this)->calculate_entropy(); 
+        calculate_entropy(); 
     }
     return entropy_;
 }
