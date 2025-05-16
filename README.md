@@ -1,3 +1,6 @@
+
+[![Build](https://github.com/7astro7/entropix/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/7astro7/entropix/actions/workflows/build_and_test.yml)
+
 # Entropix: Entropy Analysis for Security and Forensics
 
 Entropix is a CLI tool that analyzes Shannon entropy to flag files and blocks with unusually high entropy. Designed with security and forensics professionals in mind, it helps identify potentially encrypted, obfuscated, or anomalous data by detecting entropy spikes in files and directories.
